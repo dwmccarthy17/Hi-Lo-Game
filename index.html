@@ -1,617 +1,821 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Hi-Lo Game - Hawthorne Games</title>
-  <script crossorigin src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
-  <script crossorigin src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
-  <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
-  <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap" rel="stylesheet">
-</head>
-<body class="m-0 p-0">
-  <div id="root"></div>
+import { useState, useEffect } from 'react';
 
-  <script type="text/babel">
-    const { useState, useEffect } = React;
+export default function HiLoGame() {
+  const [screen, setScreen] = useState('menu');
+  const [targetNumber, setTargetNumber] = useState(0);
+  const [guess, setGuess] = useState('');
+  const [guessHistory, setGuessHistory] = useState([]);
+  const [gameStatus, setGameStatus] = useState('playing');
+  const [message, setMessage] = useState('');
+  const [flashColor, setFlashColor] = useState('');
+  const [showAnimation, setShowAnimation] = useState(false);
+  const [particles, setParticles] = useState([]);
+  const [showMenu, setShowMenu] = useState(false);
+  
+  const [currentPlayer, setCurrentPlayer] = useState(1);
+  const [player1Guesses, setPlayer1Guesses] = useState([]);
+  const [player2Guesses, setPlayer2Guesses] = useState([]);
+  const [numberSetter, setNumberSetter] = useState(0);
+  
+  const maxGuessesPvE = 10;
+  const maxGuessesPvP = 5;
 
-    function HiLoGame() {
-      const [screen, setScreen] = useState('menu');
-      const [targetNumber, setTargetNumber] = useState(0);
-      const [guess, setGuess] = useState('');
-      const [guessHistory, setGuessHistory] = useState([]);
-      const [gameStatus, setGameStatus] = useState('playing');
-      const [message, setMessage] = useState('');
-      const [flashColor, setFlashColor] = useState('');
-      const [showAnimation, setShowAnimation] = useState(false);
-      const [particles, setParticles] = useState([]);
-      const [showMenu, setShowMenu] = useState(false);
-      
-      const [currentPlayer, setCurrentPlayer] = useState(1);
-      const [player1Guesses, setPlayer1Guesses] = useState([]);
-      const [player2Guesses, setPlayer2Guesses] = useState([]);
-      const [numberSetter, setNumberSetter] = useState(0);
-      
-      const maxGuessesPvE = 10;
-      const maxGuessesPvP = 5;
+  useEffect(() => {
+    if (flashColor) {
+      const timer = setTimeout(() => setFlashColor(''), 500);
+      return () => clearTimeout(timer);
+    }
+  }, [flashColor]);
 
-      useEffect(() => {
-        if (flashColor) {
-          const timer = setTimeout(() => setFlashColor(''), 500);
-          return () => clearTimeout(timer);
-        }
-      }, [flashColor]);
-
-      useEffect(() => {
-        if (gameStatus === 'won') {
-          setShowAnimation(true);
-          createFireworks();
-          setTimeout(() => {
-            setShowAnimation(false);
-            setMessage(`THE NUMBER WAS ${targetNumber}!`);
-          }, 3000);
-        } else if (gameStatus === 'lost') {
-          setShowAnimation(true);
-          createExplosion();
-          setTimeout(() => {
-            setShowAnimation(false);
-            setMessage(`THE NUMBER WAS ${targetNumber}!`);
-          }, 3000);
-        }
-      }, [gameStatus, targetNumber]);
-
-      const createFireworks = () => {
-        const newParticles = [];
-        for (let burst = 0; burst < 8; burst++) {
-          const centerX = 20 + Math.random() * 60;
-          const centerY = 20 + Math.random() * 60;
-          for (let i = 0; i < 12; i++) {
-            const angle = (i / 12) * Math.PI * 2;
-            newParticles.push({
-              id: Math.random(),
-              x: centerX,
-              y: centerY,
-              angle: angle,
-              type: 'firework',
-              delay: burst * 0.3,
-              speed: 100 + Math.random() * 100
-            });
-          }
-        }
-        setParticles(newParticles);
-      };
-
-      const createExplosion = () => {
-        const newParticles = [];
-        for (let i = 0; i < 80; i++) {
-          const angle = Math.random() * Math.PI * 2;
-          newParticles.push({
-            id: Math.random(),
-            x: 50,
-            y: 50,
-            angle: angle,
-            type: 'explosion',
-            delay: Math.random() * 0.3,
-            speed: 80 + Math.random() * 120
-          });
-        }
-        setParticles(newParticles);
-      };
-
-      const startPvE = () => {
-        const newNumber = Math.floor(Math.random() * 1000) + 1;
-        setTargetNumber(newNumber);
-        setGuess('');
-        setGuessHistory([]);
-        setGameStatus('playing');
-        setMessage('GUESS A NUMBER BETWEEN 1 AND 1000');
-        setParticles([]);
+  useEffect(() => {
+    if (gameStatus === 'won') {
+      setShowAnimation(true);
+      createFireworks();
+      setTimeout(() => {
         setShowAnimation(false);
-        setScreen('pve');
-      };
-
-      const startPvP = () => {
-        setScreen('pvp-select');
-      };
-
-      const startBYOG = () => {
-        setScreen('byog-select');
-      };
-
-      const startPvPGame = (startingPlayer) => {
-        const newNumber = Math.floor(Math.random() * 1000) + 1;
-        setTargetNumber(newNumber);
-        setGuess('');
-        setPlayer1Guesses([]);
-        setPlayer2Guesses([]);
-        setCurrentPlayer(startingPlayer);
-        setGameStatus('playing');
-        setMessage(`PLAYER ${startingPlayer} - GUESS A NUMBER BETWEEN 1 AND 1000`);
-        setParticles([]);
+        setMessage(`THE NUMBER WAS ${targetNumber}!`);
+      }, 3000);
+    } else if (gameStatus === 'lost') {
+      setShowAnimation(true);
+      createExplosion();
+      setTimeout(() => {
         setShowAnimation(false);
-        setScreen('pvp');
-      };
+        setMessage(`THE NUMBER WAS ${targetNumber}!`);
+      }, 3000);
+    }
+  }, [gameStatus, targetNumber]);
 
-      const startBYOGNumberSelect = (setter) => {
-        setNumberSetter(setter);
-        setGuess('');
-        setScreen('byog-number');
-      };
-
-      const startBYOGGame = (customNumber) => {
-        setTargetNumber(customNumber);
-        setGuess('');
-        setGuessHistory([]);
-        const guesser = numberSetter === 1 ? 2 : 1;
-        setCurrentPlayer(guesser);
-        setGameStatus('playing');
-        setMessage('GUESS A NUMBER BETWEEN 1 AND 1000');
-        setParticles([]);
-        setShowAnimation(false);
-        setScreen('byog');
-      };
-
-      const backToMenu = () => {
-        setScreen('menu');
-        setGuess('');
-        setGuessHistory([]);
-        setPlayer1Guesses([]);
-        setPlayer2Guesses([]);
-        setGameStatus('playing');
-        setParticles([]);
-        setShowAnimation(false);
-        setShowMenu(false);
-      };
-
-      const handlePvEGuess = () => {
-        const guessNum = parseInt(guess);
-        
-        if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
-          setMessage('INVALID NUMBER - TRY AGAIN');
-          return;
-        }
-
-        const newHistory = [...guessHistory, guessNum];
-        setGuessHistory(newHistory);
-
-        if (guessNum === targetNumber) {
-          setGameStatus('won');
-        } else if (newHistory.length >= maxGuessesPvE) {
-          setGameStatus('lost');
-        } else {
-          if (guessNum < targetNumber) {
-            setMessage('HIGHER');
-            setFlashColor('red');
-          } else {
-            setMessage('LOWER');
-            setFlashColor('blue');
-          }
-        }
-
-        setGuess('');
-      };
-
-      const handleBYOGGuess = () => {
-        const guessNum = parseInt(guess);
-        
-        if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
-          setMessage('INVALID NUMBER - TRY AGAIN');
-          return;
-        }
-
-        const newHistory = [...guessHistory, guessNum];
-        setGuessHistory(newHistory);
-
-        if (guessNum === targetNumber) {
-          setGameStatus('won');
-        } else if (newHistory.length >= maxGuessesPvE) {
-          setGameStatus('lost');
-        } else {
-          if (guessNum < targetNumber) {
-            setMessage('HIGHER');
-            setFlashColor('red');
-          } else {
-            setMessage('LOWER');
-            setFlashColor('blue');
-          }
-        }
-
-        setGuess('');
-      };
-
-      const handlePvPGuess = () => {
-        const guessNum = parseInt(guess);
-        
-        if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
-          setMessage(`PLAYER ${currentPlayer} - INVALID NUMBER`);
-          return;
-        }
-
-        if (currentPlayer === 1) {
-          const newGuesses = [...player1Guesses, guessNum];
-          setPlayer1Guesses(newGuesses);
-          
-          if (guessNum === targetNumber) {
-            setGameStatus('won');
-            setMessage('PLAYER 1 WINS!');
-          } else if (player1Guesses.length >= maxGuessesPvP && player2Guesses.length >= maxGuessesPvP) {
-            setGameStatus('lost');
-          } else {
-            setCurrentPlayer(2);
-            if (guessNum < targetNumber) {
-              setMessage('PLAYER 2 - HIGHER');
-              setFlashColor('red');
-            } else {
-              setMessage('PLAYER 2 - LOWER');
-              setFlashColor('blue');
-            }
-          }
-        } else {
-          const newGuesses = [...player2Guesses, guessNum];
-          setPlayer2Guesses(newGuesses);
-          
-          if (guessNum === targetNumber) {
-            setGameStatus('won');
-            setMessage('PLAYER 2 WINS!');
-          } else if (player1Guesses.length >= maxGuessesPvP && newGuesses.length >= maxGuessesPvP) {
-            setGameStatus('lost');
-          } else {
-            setCurrentPlayer(1);
-            if (guessNum < targetNumber) {
-              setMessage('PLAYER 1 - HIGHER');
-              setFlashColor('red');
-            } else {
-              setMessage('PLAYER 1 - LOWER');
-              setFlashColor('blue');
-            }
-          }
-        }
-
-        setGuess('');
-      };
-
-      const handleKeyPress = (e) => {
-        if (e.key === 'Enter' && gameStatus === 'playing') {
-          if (screen === 'pve') {
-            handlePvEGuess();
-          } else if (screen === 'pvp') {
-            handlePvPGuess();
-          } else if (screen === 'byog') {
-            handleBYOGGuess();
-          }
-        }
-      };
-
-      const getLowGuesses = () => guessHistory.filter(g => g < targetNumber).sort((a, b) => a - b);
-      const getHighGuesses = () => guessHistory.filter(g => g > targetNumber).sort((a, b) => b - a);
-
-      const styles = `
-        * { font-family: 'Press Start 2P', monospace !important; image-rendering: pixelated; }
-        .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
-        .scanline { position: relative; overflow: hidden; }
-        .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
-        .blink { animation: blink 1s infinite; }
-        @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
-        .flash-red { animation: flashRed 0.5s; }
-        .flash-blue { animation: flashBlue 0.5s; }
-        @keyframes flashRed { 0%, 100% { color: white; } 50% { color: #ff0000; text-shadow: 0 0 20px #ff0000; } }
-        @keyframes flashBlue { 0%, 100% { color: white; } 50% { color: #0066ff; text-shadow: 0 0 20px #0066ff; } }
-        .particle { position: absolute; width: 12px; height: 12px; background: white; box-shadow: 0 0 10px white; }
-        .firework { animation: fireworkExplode 2s ease-out forwards; }
-        @keyframes fireworkExplode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
-        .explosion { animation: explosionBlast 1.5s ease-out forwards; background: white; }
-        @keyframes explosionBlast { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; box-shadow: 0 0 30px white; } 50% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
-        .animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 100; background: rgba(0, 0, 0, 0.8); }
-        .big-text { font-size: 4rem; color: white; text-shadow: 0 0 30px white; animation: pulse 1s infinite; }
-        @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
-        input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
-      `;
-
-      if (screen === 'menu') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <style>{styles}</style>
-            <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
-              <div className="border-4 border-white p-8">
-                <div className="text-center mb-12">
-                  <h1 className="text-6xl text-white mb-6 tracking-wider">HI-LO</h1>
-                  <p className="text-white text-lg italic">"Numbers are Crazy"</p>
-                </div>
-                <div className="space-y-6">
-                  <button onClick={startPvE} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PvE MODE</button>
-                  <button onClick={startPvP} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PvP MODE</button>
-                  <button onClick={startBYOG} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ B.Y.O.G MODE</button>
-                </div>
-                <div className="text-center mt-12">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
+  const createFireworks = () => {
+    const newParticles = [];
+    for (let burst = 0; burst < 8; burst++) {
+      const centerX = 20 + Math.random() * 60;
+      const centerY = 20 + Math.random() * 60;
+      for (let i = 0; i < 12; i++) {
+        const angle = (i / 12) * Math.PI * 2;
+        newParticles.push({
+          id: Math.random(),
+          x: centerX,
+          y: centerY,
+          angle: angle,
+          type: 'firework',
+          delay: burst * 0.3,
+          speed: 100 + Math.random() * 100
+        });
       }
+    }
+    setParticles(newParticles);
+  };
 
-      if (screen === 'pvp-select') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <style>{styles}</style>
-            <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
-              <div className="border-4 border-white p-8">
-                <div className="text-center mb-12">
-                  <h1 className="text-4xl text-white mb-6 tracking-wider">PvP MODE</h1>
-                  <p className="text-white text-sm">WHO GOES FIRST?</p>
-                </div>
-                <div className="space-y-6">
-                  <button onClick={() => startPvPGame(1)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PLAYER 1</button>
-                  <button onClick={() => startPvPGame(2)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PLAYER 2</button>
-                  <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">◀ BACK TO MENU</button>
-                </div>
-                <div className="text-center mt-12">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+  const createExplosion = () => {
+    const newParticles = [];
+    for (let i = 0; i < 80; i++) {
+      const angle = Math.random() * Math.PI * 2;
+      newParticles.push({
+        id: Math.random(),
+        x: 50,
+        y: 50,
+        angle: angle,
+        type: 'explosion',
+        delay: Math.random() * 0.3,
+        speed: 80 + Math.random() * 120
+      });
+    }
+    setParticles(newParticles);
+  };
 
-      if (screen === 'byog-select') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <style>{styles}</style>
-            <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
-              <div className="border-4 border-white p-8">
-                <div className="text-center mb-12">
-                  <h1 className="text-3xl text-white mb-4 tracking-wider">BUILD YOUR OWN GAME MODE</h1>
-                  <p className="text-white text-sm">WHO GOES FIRST?</p>
-                </div>
-                <div className="space-y-6">
-                  <button onClick={() => startBYOGNumberSelect(1)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PLAYER 1</button>
-                  <button onClick={() => startBYOGNumberSelect(2)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ PLAYER 2</button>
-                  <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">◀ BACK TO MENU</button>
-                </div>
-                <div className="text-center mt-12">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+  const startPvE = () => {
+    const newNumber = Math.floor(Math.random() * 1000) + 1;
+    setTargetNumber(newNumber);
+    setGuess('');
+    setGuessHistory([]);
+    setGameStatus('playing');
+    setMessage('GUESS A NUMBER BETWEEN 1 AND 1000');
+    setParticles([]);
+    setShowAnimation(false);
+    setScreen('pve');
+  };
 
-      if (screen === 'byog-number') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4">
-            <style>{styles}</style>
-            <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
-              <div className="border-4 border-white p-8">
-                <div className="text-center mb-12">
-                  <h1 className="text-2xl text-white mb-6 tracking-wider">PLAYER {numberSetter}</h1>
-                  <p className="text-white text-sm mb-4">CHOOSE A NUMBER BETWEEN 1 AND 1000</p>
-                  <p className="text-white text-xs">(PLAYER {numberSetter === 1 ? 2 : 1} - DON'T LOOK!)</p>
-                </div>
-                <div className="space-y-6">
-                  <input type="number" value={guess} onChange={(e) => setGuess(e.target.value)} onKeyPress={(e) => { if (e.key === 'Enter') { const num = parseInt(guess); if (!isNaN(num) && num >= 1 && num <= 1000) { startBYOGGame(num); } } }} placeholder="ENTER NUMBER" className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700" min="1" max="1000" />
-                  <button onClick={() => { const num = parseInt(guess); if (!isNaN(num) && num >= 1 && num <= 1000) { startBYOGGame(num); } }} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">▶ START GAME</button>
-                  <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">◀ BACK TO MENU</button>
-                </div>
-                <div className="text-center mt-12">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+  const startPvP = () => {
+    setScreen('pvp-select');
+  };
 
-      if (screen === 'pve' || screen === 'byog') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-            <style>{styles}</style>
-            {showAnimation && (
-              <div className="animation-overlay">
-                <div className="big-text">{gameStatus === 'won' ? '🎉 YOU WIN! 🎉' : '💣 BOOM! 💣'}</div>
-              </div>
-            )}
-            {particles.map((particle) => (
-              <div key={particle.id} className={`particle ${particle.type}`} style={{ left: `${particle.x}%`, top: `${particle.y}%`, animationDelay: `${particle.delay}s`, '--tx': `${Math.cos(particle.angle) * particle.speed}px`, '--ty': `${Math.sin(particle.angle) * particle.speed}px` }} />
-            ))}
-            <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline relative z-20">
-              <div className="border-4 border-white p-6">
-                <div className="absolute top-4 right-4">
-                  <button onClick={() => setShowMenu(!showMenu)} className="bg-white hover:bg-gray-300 text-black p-2 border-2 border-gray-300">
-                    <div className="w-6 h-6 flex flex-col justify-center gap-1">
-                      <div className="w-full h-1 bg-black"></div>
-                      <div className="w-full h-1 bg-black"></div>
-                      <div className="w-full h-1 bg-black"></div>
-                    </div>
-                  </button>
-                  {showMenu && (
-                    <div className="absolute top-12 right-0 bg-black border-4 border-white p-4 min-w-[200px]">
-                      <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-3 border-2 border-gray-300 text-xs tracking-wider">◀ MENU</button>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center mb-8">
-                  <h1 className="text-4xl text-white mb-4 tracking-wider">HI-LO</h1>
-                  <div className="text-white text-xs mb-2">════════════════════════════</div>
-                  <p className="text-white text-xs">{screen === 'pve' ? 'PvE MODE' : `PLAYER ${currentPlayer} GUESS`}</p>
-                </div>
-                <div className="bg-gray-900 border-4 border-white p-4 mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-white text-xs">GUESSES:</span>
-                    <span className="text-white text-xl">{guessHistory.length}/{maxGuessesPvE}</span>
-                  </div>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(maxGuessesPvE)].map((_, slotIndex) => {
-                      const lowGuesses = getLowGuesses();
-                      const highGuesses = getHighGuesses();
-                      const numLowGuesses = lowGuesses.length;
-                      const numHighGuesses = highGuesses.length;
-                      if (slotIndex < numLowGuesses) {
-                        return <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">{lowGuesses[slotIndex]}</div>;
-                      }
-                      const highSlotIndex = maxGuessesPvE - 1 - slotIndex;
-                      if (highSlotIndex < numHighGuesses) {
-                        return <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">{highGuesses[highSlotIndex]}</div>;
-                      }
-                      return <div key={slotIndex} className="flex-1 h-8 border-2 bg-black border-gray-700" />;
-                    })}
-                  </div>
-                  <div className="flex justify-between text-white text-xs">
-                    <span>← TOO LOW</span>
-                    <span>TOO HIGH →</span>
-                  </div>
-                </div>
-                <div className="bg-black border-4 border-white p-4 mb-6 min-h-[80px] flex items-center justify-center">
-                  <p className={`text-white text-sm text-center leading-relaxed break-words ${flashColor === 'red' ? 'flash-red' : ''} ${flashColor === 'blue' ? 'flash-blue' : ''}`}>
-                    {message}
-                    {gameStatus === 'playing' && <span className="blink ml-1">_</span>}
-                  </p>
-                </div>
-                {gameStatus === 'playing' ? (
-                  <div className="space-y-4">
-                    <input type="number" value={guess} onChange={(e) => setGuess(e.target.value)} onKeyPress={handleKeyPress} placeholder="ENTER NUMBER" className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700" min="1" max="1000" />
-                    <button onClick={screen === 'pve' ? handlePvEGuess : handleBYOGGuess} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">▶ SUBMIT GUESS</button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <button onClick={screen === 'pve' ? startPvE : () => startBYOGNumberSelect(numberSetter)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">▶ PLAY AGAIN</button>
-                    <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">◀ BACK TO MENU</button>
-                  </div>
-                )}
-                <div className="text-center mt-6">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+  const startBYOG = () => {
+    setScreen('byog-select');
+  };
 
-      if (screen === 'pvp') {
-        return (
-          <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
-            <style>{styles}</style>
-            {showAnimation && (
-              <div className="animation-overlay">
-                <div className="big-text">{message.includes('PLAYER 1') ? '🎉 PLAYER 1 WINS! 🎉' : message.includes('PLAYER 2') ? '🎉 PLAYER 2 WINS! 🎉' : '💣 NOBODY WINS! 💣'}</div>
-              </div>
-            )}
-            {particles.map((particle) => (
-              <div key={particle.id} className={`particle ${particle.type}`} style={{ left: `${particle.x}%`, top: `${particle.y}%`, animationDelay: `${particle.delay}s`, '--tx': `${Math.cos(particle.angle) * particle.speed}px`, '--ty': `${Math.sin(particle.angle) * particle.speed}px` }} />
-            ))}
-            <div className="pixel-border bg-black p-8 max-w-3xl w-full scanline relative z-20">
-              <div className="border-4 border-white p-6">
-                <div className="absolute top-4 right-4">
-                  <button onClick={() => setShowMenu(!showMenu)} className="bg-white hover:bg-gray-300 text-black p-2 border-2 border-gray-300">
-                    <div className="w-6 h-6 flex flex-col justify-center gap-1">
-                      <div className="w-full h-1 bg-black"></div>
-                      <div className="w-full h-1 bg-black"></div>
-                      <div className="w-full h-1 bg-black"></div>
-                    </div>
-                  </button>
-                  {showMenu && (
-                    <div className="absolute top-12 right-0 bg-black border-4 border-white p-4 min-w-[200px]">
-                      <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-3 border-2 border-gray-300 text-xs tracking-wider">◀ MENU</button>
-                    </div>
-                  )}
-                </div>
-                <div className="text-center mb-8">
-                  <h1 className="text-4xl text-white mb-4 tracking-wider">HI-LO</h1>
-                  <div className="text-white text-xs mb-2">════════════════════════════</div>
-                  <p className="text-white text-xs">PvP MODE</p>
-                </div>
-                <div className="bg-gray-900 border-4 border-white p-4 mb-6">
-                  <div className="flex justify-between items-center mb-2">
-                    <span className="text-white text-xs">TOTAL GUESSES:</span>
-                    <span className="text-white text-xl">{player1Guesses.length + player2Guesses.length}/{maxGuessesPvP * 2}</span>
-                  </div>
-                  <div className="flex gap-1 mb-4">
-                    {[...Array(maxGuessesPvP * 2)].map((_, slotIndex) => {
-                      const allGuesses = [...player1Guesses, ...player2Guesses];
-                      const lowGuesses = allGuesses.filter(g => g < targetNumber).sort((a, b) => a - b);
-                      const highGuesses = allGuesses.filter(g => g > targetNumber).sort((a, b) => b - a);
-                      const numLowGuesses = lowGuesses.length;
-                      const numHighGuesses = highGuesses.length;
-                      if (slotIndex < numLowGuesses) {
-                        return <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">{lowGuesses[slotIndex]}</div>;
-                      }
-                      const highSlotIndex = (maxGuessesPvP * 2) - 1 - slotIndex;
-                      if (highSlotIndex < numHighGuesses) {
-                        return <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">{highGuesses[highSlotIndex]}</div>;
-                      }
-                      return <div key={slotIndex} className="flex-1 h-8 border-2 bg-black border-gray-700" />;
-                    })}
-                  </div>
-                  <div className="flex justify-between text-white text-xs">
-                    <span>← TOO LOW</span>
-                    <span>TOO HIGH →</span>
-                  </div>
-                </div>
-                <div className="grid grid-cols-2 gap-4 mb-6">
-                  <div className="bg-gray-900 border-4 border-white p-4">
-                    <h3 className="text-white text-sm text-center mb-4">PLAYER 1</h3>
-                    <div className="space-y-2">
-                      {player1Guesses.map((g, index) => (
-                        <div key={index} className="border-2 bg-white border-gray-300 p-2 text-center text-black font-bold">{g}</div>
-                      ))}
-                      {[...Array(maxGuessesPvP - player1Guesses.length)].map((_, i) => (
-                        <div key={`p1-empty-${i}`} className="border-2 bg-black border-gray-700 p-2 h-10" />
-                      ))}
-                    </div>
-                  </div>
-                  <div className="bg-gray-900 border-4 border-white p-4">
-                    <h3 className="text-white text-sm text-center mb-4">PLAYER 2</h3>
-                    <div className="space-y-2">
-                      {player2Guesses.map((g, index) => (
-                        <div key={index} className="border-2 bg-white border-gray-300 p-2 text-center text-black font-bold">{g}</div>
-                      ))}
-                      {[...Array(maxGuessesPvP - player2Guesses.length)].map((_, i) => (
-                        <div key={`p2-empty-${i}`} className="border-2 bg-black border-gray-700 p-2 h-10" />
-                      ))}
-                    </div>
-                  </div>
-                </div>
-                <div className="bg-black border-4 border-white p-4 mb-6 min-h-[80px] flex items-center justify-center">
-                  <p className={`text-white text-sm text-center leading-relaxed break-words ${flashColor === 'red' ? 'flash-red' : ''} ${flashColor === 'blue' ? 'flash-blue' : ''}`}>
-                    {message}
-                    {gameStatus === 'playing' && <span className="blink ml-1">_</span>}
-                  </p>
-                </div>
-                {gameStatus === 'playing' ? (
-                  <div className="space-y-4">
-                    <input type="number" value={guess} onChange={(e) => setGuess(e.target.value)} onKeyPress={handleKeyPress} placeholder="ENTER NUMBER" className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700" min="1" max="1000" />
-                    <button onClick={handlePvPGuess} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">▶ SUBMIT GUESS</button>
-                  </div>
-                ) : (
-                  <div className="space-y-4">
-                    <button onClick={() => startPvPGame(currentPlayer)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">▶ PLAY AGAIN</button>
-                    <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">◀ BACK TO MENU</button>
-                  </div>
-                )}
-                <div className="text-center mt-6">
-                  <div className="text-white text-xs">════════════════════════════</div>
-                  <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
-                </div>
-              </div>
-            </div>
-          </div>
-        );
-      }
+  const startPvPGame = (startingPlayer) => {
+    const newNumber = Math.floor(Math.random() * 1000) + 1;
+    setTargetNumber(newNumber);
+    setGuess('');
+    setPlayer1Guesses([]);
+    setPlayer2Guesses([]);
+    setCurrentPlayer(startingPlayer);
+    setGameStatus('playing');
+    setMessage(`PLAYER ${startingPlayer} - GUESS A NUMBER BETWEEN 1 AND 1000`);
+    setParticles([]);
+    setShowAnimation(false);
+    setScreen('pvp');
+  };
 
-      return <div>Loading...</div>;
+  const startBYOGNumberSelect = (setter) => {
+    setNumberSetter(setter);
+    setGuess('');
+    setScreen('byog-number');
+  };
+
+  const startBYOGGame = (customNumber) => {
+    setTargetNumber(customNumber);
+    setGuess('');
+    setGuessHistory([]);
+    const guesser = numberSetter === 1 ? 2 : 1;
+    setCurrentPlayer(guesser);
+    setGameStatus('playing');
+    setMessage('GUESS A NUMBER BETWEEN 1 AND 1000');
+    setParticles([]);
+    setShowAnimation(false);
+    setScreen('byog');
+  };
+
+  const backToMenu = () => {
+    setScreen('menu');
+    setGuess('');
+    setGuessHistory([]);
+    setPlayer1Guesses([]);
+    setPlayer2Guesses([]);
+    setGameStatus('playing');
+    setParticles([]);
+    setShowAnimation(false);
+    setShowMenu(false);
+  };
+
+  const handlePvEGuess = () => {
+    const guessNum = parseInt(guess);
+    
+    if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
+      setMessage('INVALID NUMBER - TRY AGAIN');
+      return;
     }
 
-    ReactDOM.render(<HiLoGame />, document.getElementById('root'));
-  </script>
-</body>
-</html>
+    const newHistory = [...guessHistory, guessNum];
+    setGuessHistory(newHistory);
+
+    if (guessNum === targetNumber) {
+      setGameStatus('won');
+    } else if (newHistory.length >= maxGuessesPvE) {
+      setGameStatus('lost');
+    } else {
+      if (guessNum < targetNumber) {
+        setMessage('HIGHER');
+        setFlashColor('red');
+      } else {
+        setMessage('LOWER');
+        setFlashColor('blue');
+      }
+    }
+
+    setGuess('');
+  };
+
+  const handleBYOGGuess = () => {
+    const guessNum = parseInt(guess);
+    
+    if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
+      setMessage('INVALID NUMBER - TRY AGAIN');
+      return;
+    }
+
+    const newHistory = [...guessHistory, guessNum];
+    setGuessHistory(newHistory);
+
+    if (guessNum === targetNumber) {
+      setGameStatus('won');
+    } else if (newHistory.length >= maxGuessesPvE) {
+      setGameStatus('lost');
+    } else {
+      if (guessNum < targetNumber) {
+        setMessage('HIGHER');
+        setFlashColor('red');
+      } else {
+        setMessage('LOWER');
+        setFlashColor('blue');
+      }
+    }
+
+    setGuess('');
+  };
+
+  const handlePvPGuess = () => {
+    const guessNum = parseInt(guess);
+    
+    if (isNaN(guessNum) || guessNum < 1 || guessNum > 1000) {
+      setMessage(`PLAYER ${currentPlayer} - INVALID NUMBER`);
+      return;
+    }
+
+    if (currentPlayer === 1) {
+      const newGuesses = [...player1Guesses, guessNum];
+      setPlayer1Guesses(newGuesses);
+      
+      if (guessNum === targetNumber) {
+        setGameStatus('won');
+        setMessage('PLAYER 1 WINS!');
+      } else if (player1Guesses.length >= maxGuessesPvP && player2Guesses.length >= maxGuessesPvP) {
+        setGameStatus('lost');
+      } else {
+        setCurrentPlayer(2);
+        if (guessNum < targetNumber) {
+          setMessage('PLAYER 2 - HIGHER');
+          setFlashColor('red');
+        } else {
+          setMessage('PLAYER 2 - LOWER');
+          setFlashColor('blue');
+        }
+      }
+    } else {
+      const newGuesses = [...player2Guesses, guessNum];
+      setPlayer2Guesses(newGuesses);
+      
+      if (guessNum === targetNumber) {
+        setGameStatus('won');
+        setMessage('PLAYER 2 WINS!');
+      } else if (player1Guesses.length >= maxGuessesPvP && newGuesses.length >= maxGuessesPvP) {
+        setGameStatus('lost');
+      } else {
+        setCurrentPlayer(1);
+        if (guessNum < targetNumber) {
+          setMessage('PLAYER 1 - HIGHER');
+          setFlashColor('red');
+        } else {
+          setMessage('PLAYER 1 - LOWER');
+          setFlashColor('blue');
+        }
+      }
+    }
+
+    setGuess('');
+  };
+
+  const handleKeyPress = (e) => {
+    if (e.key === 'Enter' && gameStatus === 'playing') {
+      if (screen === 'pve') {
+        handlePvEGuess();
+      } else if (screen === 'pvp') {
+        handlePvPGuess();
+      } else if (screen === 'byog') {
+        handleBYOGGuess();
+      }
+    }
+  };
+
+  const getLowGuesses = () => guessHistory.filter(g => g < targetNumber).sort((a, b) => a - b);
+  const getHighGuesses = () => guessHistory.filter(g => g > targetNumber).sort((a, b) => b - a);
+
+  if (screen === 'menu') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+        `}</style>
+        
+        <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
+          <div className="border-4 border-white p-8">
+            <div className="text-center mb-12">
+              <h1 className="text-6xl text-white mb-6 tracking-wider">HI-LO</h1>
+              <p className="text-white text-lg italic">"Numbers are Crazy"</p>
+            </div>
+
+            <div className="space-y-6">
+              <button onClick={startPvE} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PvE MODE
+              </button>
+              <button onClick={startPvP} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PvP MODE
+              </button>
+              <button onClick={startBYOG} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ B.Y.O.G MODE
+              </button>
+            </div>
+
+            <div className="text-center mt-12">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'pvp-select') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+        `}</style>
+        
+        <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
+          <div className="border-4 border-white p-8">
+            <div className="text-center mb-12">
+              <h1 className="text-4xl text-white mb-6 tracking-wider">PvP MODE</h1>
+              <p className="text-white text-sm">WHO GOES FIRST?</p>
+            </div>
+
+            <div className="space-y-6">
+              <button onClick={() => startPvPGame(1)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PLAYER 1
+              </button>
+              <button onClick={() => startPvPGame(2)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PLAYER 2
+              </button>
+              <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">
+                ◀ BACK TO MENU
+              </button>
+            </div>
+
+            <div className="text-center mt-12">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'byog-select') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+        `}</style>
+        
+        <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
+          <div className="border-4 border-white p-8">
+            <div className="text-center mb-12">
+              <h1 className="text-3xl text-white mb-4 tracking-wider">BUILD YOUR OWN GAME MODE</h1>
+              <p className="text-white text-sm">WHO GOES FIRST?</p>
+            </div>
+
+            <div className="space-y-6">
+              <button onClick={() => startBYOGNumberSelect(1)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PLAYER 1
+              </button>
+              <button onClick={() => startBYOGNumberSelect(2)} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider">
+                ▶ PLAYER 2
+              </button>
+              <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">
+                ◀ BACK TO MENU
+              </button>
+            </div>
+
+            <div className="text-center mt-12">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'byog-number') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+          input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        `}</style>
+        
+        <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline">
+          <div className="border-4 border-white p-8">
+            <div className="text-center mb-12">
+              <h1 className="text-2xl text-white mb-6 tracking-wider">PLAYER {numberSetter}</h1>
+              <p className="text-white text-sm mb-4">CHOOSE A NUMBER BETWEEN 1 AND 1000</p>
+              <p className="text-white text-xs">(PLAYER {numberSetter === 1 ? 2 : 1} - DON'T LOOK!)</p>
+            </div>
+
+            <div className="space-y-6">
+              <input
+                type="number"
+                value={guess}
+                onChange={(e) => setGuess(e.target.value)}
+                onKeyPress={(e) => {
+                  if (e.key === 'Enter') {
+                    const num = parseInt(guess);
+                    if (!isNaN(num) && num >= 1 && num <= 1000) {
+                      startBYOGGame(num);
+                    }
+                  }
+                }}
+                placeholder="ENTER NUMBER"
+                className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700"
+                min="1"
+                max="1000"
+              />
+              
+              <button
+                onClick={() => {
+                  const num = parseInt(guess);
+                  if (!isNaN(num) && num >= 1 && num <= 1000) {
+                    startBYOGGame(num);
+                  }
+                }}
+                className="w-full bg-white hover:bg-gray-300 text-black font-bold py-6 border-4 border-gray-300 hover:border-gray-400 transition-colors text-xl tracking-wider"
+              >
+                ▶ START GAME
+              </button>
+
+              <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider">
+                ◀ BACK TO MENU
+              </button>
+            </div>
+
+            <div className="text-center mt-12">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'pve' || screen === 'byog') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+          .blink { animation: blink 1s infinite; }
+          @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+          .flash-red { animation: flashRed 0.5s; }
+          .flash-blue { animation: flashBlue 0.5s; }
+          @keyframes flashRed { 0%, 100% { color: white; } 50% { color: #ff0000; text-shadow: 0 0 20px #ff0000; } }
+          @keyframes flashBlue { 0%, 100% { color: white; } 50% { color: #0066ff; text-shadow: 0 0 20px #0066ff; } }
+          .particle { position: absolute; width: 12px; height: 12px; background: white; box-shadow: 0 0 10px white; }
+          .firework { animation: fireworkExplode 2s ease-out forwards; }
+          @keyframes fireworkExplode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+          .explosion { animation: explosionBlast 1.5s ease-out forwards; background: white; }
+          @keyframes explosionBlast { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; box-shadow: 0 0 30px white; } 50% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+          .animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 100; background: rgba(0, 0, 0, 0.8); }
+          .big-text { font-size: 4rem; color: white; text-shadow: 0 0 30px white; animation: pulse 1s infinite; }
+          @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+          input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        `}</style>
+
+        {showAnimation && (
+          <div className="animation-overlay">
+            <div className="big-text">
+              {gameStatus === 'won' ? '🎉 YOU WIN! 🎉' : '💣 BOOM! 💣'}
+            </div>
+          </div>
+        )}
+
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className={`particle ${particle.type}`}
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              animationDelay: `${particle.delay}s`,
+              '--tx': `${Math.cos(particle.angle) * particle.speed}px`,
+              '--ty': `${Math.sin(particle.angle) * particle.speed}px`,
+            }}
+          />
+        ))}
+        
+        <div className="pixel-border bg-black p-8 max-w-2xl w-full scanline relative z-20">
+          <div className="border-4 border-white p-6">
+            <div className="absolute top-4 right-4">
+              <button onClick={() => setShowMenu(!showMenu)} className="bg-white hover:bg-gray-300 text-black p-2 border-2 border-gray-300">
+                <div className="w-6 h-6 flex flex-col justify-center gap-1">
+                  <div className="w-full h-1 bg-black"></div>
+                  <div className="w-full h-1 bg-black"></div>
+                  <div className="w-full h-1 bg-black"></div>
+                </div>
+              </button>
+              
+              {showMenu && (
+                <div className="absolute top-12 right-0 bg-black border-4 border-white p-4 min-w-[200px]">
+                  <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-3 border-2 border-gray-300 text-xs tracking-wider">
+                    ◀ MENU
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mb-8">
+              <h1 className="text-4xl text-white mb-4 tracking-wider">HI-LO</h1>
+              <div className="text-white text-xs mb-2">════════════════════════════</div>
+              <p className="text-white text-xs">
+                {screen === 'pve' ? 'PvE MODE' : `PLAYER ${currentPlayer} GUESS`}
+              </p>
+            </div>
+
+            <div className="bg-gray-900 border-4 border-white p-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white text-xs">GUESSES:</span>
+                <span className="text-white text-xl">{guessHistory.length}/{maxGuessesPvE}</span>
+              </div>
+              <div className="flex gap-1 mb-4">
+                {[...Array(maxGuessesPvE)].map((_, slotIndex) => {
+                  const lowGuesses = getLowGuesses();
+                  const highGuesses = getHighGuesses();
+                  const numLowGuesses = lowGuesses.length;
+                  const numHighGuesses = highGuesses.length;
+                  
+                  if (slotIndex < numLowGuesses) {
+                    return (
+                      <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">
+                        {lowGuesses[slotIndex]}
+                      </div>
+                    );
+                  }
+                  
+                  const highSlotIndex = maxGuessesPvE - 1 - slotIndex;
+                  if (highSlotIndex < numHighGuesses) {
+                    return (
+                      <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">
+                        {highGuesses[highSlotIndex]}
+                      </div>
+                    );
+                  }
+                  
+                  return <div key={slotIndex} className="flex-1 h-8 border-2 bg-black border-gray-700" />;
+                })}
+              </div>
+              <div className="flex justify-between text-white text-xs">
+                <span>← TOO LOW</span>
+                <span>TOO HIGH →</span>
+              </div>
+            </div>
+
+            <div className="bg-black border-4 border-white p-4 mb-6 min-h-[80px] flex items-center justify-center">
+              <p className={`text-white text-sm text-center leading-relaxed break-words ${flashColor === 'red' ? 'flash-red' : ''} ${flashColor === 'blue' ? 'flash-blue' : ''}`}>
+                {message}
+                {gameStatus === 'playing' && <span className="blink ml-1">_</span>}
+              </p>
+            </div>
+
+            {gameStatus === 'playing' ? (
+              <div className="space-y-4">
+                <input
+                  type="number"
+                  value={guess}
+                  onChange={(e) => setGuess(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="ENTER NUMBER"
+                  className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700"
+                  min="1"
+                  max="1000"
+                />
+                <button
+                  onClick={screen === 'pve' ? handlePvEGuess : handleBYOGGuess}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ▶ SUBMIT GUESS
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <button
+                  onClick={screen === 'pve' ? startPvE : () => startBYOGNumberSelect(numberSetter)}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ▶ PLAY AGAIN
+                </button>
+                <button
+                  onClick={backToMenu}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ◀ BACK TO MENU
+                </button>
+              </div>
+            )}
+
+            <div className="text-center mt-6">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (screen === 'pvp') {
+    return (
+      <div className="min-h-screen bg-black flex items-center justify-center p-4 relative overflow-hidden">
+        <style>{`
+          @import url('https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap');
+          * { font-family: 'Press Start 2P', monospace; image-rendering: pixelated; }
+          .pixel-border { box-shadow: 0 0 0 4px white, 0 0 0 8px black, 0 0 20px white; }
+          .scanline { position: relative; overflow: hidden; }
+          .scanline::before { content: ''; position: absolute; top: 0; left: 0; width: 100%; height: 100%; background: repeating-linear-gradient(0deg, rgba(255, 255, 255, 0.03), rgba(255, 255, 255, 0.03) 1px, transparent 1px, transparent 2px); pointer-events: none; z-index: 10; }
+          .blink { animation: blink 1s infinite; }
+          @keyframes blink { 0%, 49% { opacity: 1; } 50%, 100% { opacity: 0; } }
+          .flash-red { animation: flashRed 0.5s; }
+          .flash-blue { animation: flashBlue 0.5s; }
+          @keyframes flashRed { 0%, 100% { color: white; } 50% { color: #ff0000; text-shadow: 0 0 20px #ff0000; } }
+          @keyframes flashBlue { 0%, 100% { color: white; } 50% { color: #0066ff; text-shadow: 0 0 20px #0066ff; } }
+          .particle { position: absolute; width: 12px; height: 12px; background: white; box-shadow: 0 0 10px white; }
+          .firework { animation: fireworkExplode 2s ease-out forwards; }
+          @keyframes fireworkExplode { 0% { transform: translate(0, 0) scale(1); opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+          .explosion { animation: explosionBlast 1.5s ease-out forwards; background: white; }
+          @keyframes explosionBlast { 0% { transform: translate(0, 0) scale(1.5); opacity: 1; box-shadow: 0 0 30px white; } 50% { opacity: 1; } 100% { transform: translate(var(--tx), var(--ty)) scale(0); opacity: 0; } }
+          .animation-overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; display: flex; align-items: center; justify-content: center; z-index: 100; background: rgba(0, 0, 0, 0.8); }
+          .big-text { font-size: 4rem; color: white; text-shadow: 0 0 30px white; animation: pulse 1s infinite; }
+          @keyframes pulse { 0%, 100% { transform: scale(1); } 50% { transform: scale(1.1); } }
+          input[type="number"]::-webkit-inner-spin-button, input[type="number"]::-webkit-outer-spin-button { -webkit-appearance: none; margin: 0; }
+        `}</style>
+
+        {showAnimation && (
+          <div className="animation-overlay">
+            <div className="big-text">
+              {message.includes('PLAYER 1') ? '🎉 PLAYER 1 WINS! 🎉' : message.includes('PLAYER 2') ? '🎉 PLAYER 2 WINS! 🎉' : '💣 NOBODY WINS! 💣'}
+            </div>
+          </div>
+        )}
+
+        {particles.map((particle) => (
+          <div
+            key={particle.id}
+            className={`particle ${particle.type}`}
+            style={{
+              left: `${particle.x}%`,
+              top: `${particle.y}%`,
+              animationDelay: `${particle.delay}s`,
+              '--tx': `${Math.cos(particle.angle) * particle.speed}px`,
+              '--ty': `${Math.sin(particle.angle) * particle.speed}px`,
+            }}
+          />
+        ))}
+        
+        <div className="pixel-border bg-black p-8 max-w-3xl w-full scanline relative z-20">
+          <div className="border-4 border-white p-6">
+            <div className="absolute top-4 right-4">
+              <button onClick={() => setShowMenu(!showMenu)} className="bg-white hover:bg-gray-300 text-black p-2 border-2 border-gray-300">
+                <div className="w-6 h-6 flex flex-col justify-center gap-1">
+                  <div className="w-full h-1 bg-black"></div>
+                  <div className="w-full h-1 bg-black"></div>
+                  <div className="w-full h-1 bg-black"></div>
+                </div>
+              </button>
+              
+              {showMenu && (
+                <div className="absolute top-12 right-0 bg-black border-4 border-white p-4 min-w-[200px]">
+                  <button onClick={backToMenu} className="w-full bg-white hover:bg-gray-300 text-black font-bold py-3 border-2 border-gray-300 text-xs tracking-wider">
+                    ◀ MENU
+                  </button>
+                </div>
+              )}
+            </div>
+
+            <div className="text-center mb-8">
+              <h1 className="text-4xl text-white mb-4 tracking-wider">HI-LO</h1>
+              <div className="text-white text-xs mb-2">════════════════════════════</div>
+              <p className="text-white text-xs">PvP MODE</p>
+            </div>
+
+            <div className="bg-gray-900 border-4 border-white p-4 mb-6">
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-white text-xs">TOTAL GUESSES:</span>
+                <span className="text-white text-xl">{player1Guesses.length + player2Guesses.length}/{maxGuessesPvP * 2}</span>
+              </div>
+              <div className="flex gap-1 mb-4">
+                {[...Array(maxGuessesPvP * 2)].map((_, slotIndex) => {
+                  const allGuesses = [...player1Guesses, ...player2Guesses];
+                  const lowGuesses = allGuesses.filter(g => g < targetNumber).sort((a, b) => a - b);
+                  const highGuesses = allGuesses.filter(g => g > targetNumber).sort((a, b) => b - a);
+                  const numLowGuesses = lowGuesses.length;
+                  const numHighGuesses = highGuesses.length;
+                  
+                  if (slotIndex < numLowGuesses) {
+                    return (
+                      <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">
+                        {lowGuesses[slotIndex]}
+                      </div>
+                    );
+                  }
+                  
+                  const highSlotIndex = (maxGuessesPvP * 2) - 1 - slotIndex;
+                  if (highSlotIndex < numHighGuesses) {
+                    return (
+                      <div key={slotIndex} className="flex-1 h-8 border-2 bg-white border-gray-300 flex items-center justify-center text-black text-xs font-bold">
+                        {highGuesses[highSlotIndex]}
+                      </div>
+                    );
+                  }
+                  
+                  return <div key={slotIndex} className="flex-1 h-8 border-2 bg-black border-gray-700" />;
+                })}
+              </div>
+              <div className="flex justify-between text-white text-xs">
+                <span>← TOO LOW</span>
+                <span>TOO HIGH →</span>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4 mb-6">
+              <div className="bg-gray-900 border-4 border-white p-4">
+                <h3 className="text-white text-sm text-center mb-4">PLAYER 1</h3>
+                <div className="space-y-2">
+                  {player1Guesses.map((g, index) => (
+                    <div key={index} className="border-2 bg-white border-gray-300 p-2 text-center text-black font-bold">
+                      {g}
+                    </div>
+                  ))}
+                  {[...Array(maxGuessesPvP - player1Guesses.length)].map((_, i) => (
+                    <div key={`p1-empty-${i}`} className="border-2 bg-black border-gray-700 p-2 h-10" />
+                  ))}
+                </div>
+              </div>
+
+              <div className="bg-gray-900 border-4 border-white p-4">
+                <h3 className="text-white text-sm text-center mb-4">PLAYER 2</h3>
+                <div className="space-y-2">
+                  {player2Guesses.map((g, index) => (
+                    <div key={index} className="border-2 bg-white border-gray-300 p-2 text-center text-black font-bold">
+                      {g}
+                    </div>
+                  ))}
+                  {[...Array(maxGuessesPvP - player2Guesses.length)].map((_, i) => (
+                    <div key={`p2-empty-${i}`} className="border-2 bg-black border-gray-700 p-2 h-10" />
+                  ))}
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-black border-4 border-white p-4 mb-6 min-h-[80px] flex items-center justify-center">
+              <p className={`text-white text-sm text-center leading-relaxed break-words ${flashColor === 'red' ? 'flash-red' : ''} ${flashColor === 'blue' ? 'flash-blue' : ''}`}>
+                {message}
+                {gameStatus === 'playing' && <span className="blink ml-1">_</span>}
+              </p>
+            </div>
+
+            {gameStatus === 'playing' ? (
+              <div className="space-y-4">
+                <input
+                  type="number"
+                  value={guess}
+                  onChange={(e) => setGuess(e.target.value)}
+                  onKeyPress={handleKeyPress}
+                  placeholder="ENTER NUMBER"
+                  className="w-full bg-black border-4 border-white text-white text-xl p-4 text-center focus:outline-none focus:border-gray-400 placeholder-gray-700"
+                  min="1"
+                  max="1000"
+                />
+                <button
+                  onClick={handlePvPGuess}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ▶ SUBMIT GUESS
+                </button>
+              </div>
+            ) : (
+              <div className="space-y-4">
+                <button
+                  onClick={() => startPvPGame(currentPlayer)}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ▶ PLAY AGAIN
+                </button>
+                <button
+                  onClick={backToMenu}
+                  className="w-full bg-white hover:bg-gray-300 text-black font-bold py-4 border-4 border-gray-300 hover:border-gray-400 transition-colors text-sm tracking-wider"
+                >
+                  ◀ BACK TO MENU
+                </button>
+              </div>
+            )}
+
+            <div className="text-center mt-6">
+              <div className="text-white text-xs">════════════════════════════</div>
+              <p className="text-white text-xs mt-2">© 2025 HAWTHORNE GAMES</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    );
+  }
+}
